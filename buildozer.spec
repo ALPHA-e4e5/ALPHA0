@@ -48,7 +48,7 @@ version = 1.0.0
 
 [buildozer]
 # (str) Path to the project's source code directory
-source.dir = .
+source.dir =.
 
 # (bool) Copy only source files into the APK, skipping unused dependencies
 copy_to_bin = False

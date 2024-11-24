@@ -1,4 +1,4 @@
-name: Build APK with Buildozer
+name: Android APK Build
 
 on:
   push:
@@ -13,47 +13,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Code
+      # Step 1: Check out the repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Cache dependencies
-      - name: Cache Buildozer
-        uses: actions/cache@v3
-        with:
-          path: ~/.buildozer
-          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
-
-      # Step 3: Install dependencies
-      - name: Install Dependencies
+      # Step 2: Install dependencies
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y \
-            build-essential \
-            libssl-dev \
-            libffi-dev \
             python3-dev \
-            python3-venv \
-            zip \
+            python3-pip \
+            openjdk-11-jdk \
             unzip \
-            default-jdk \
-            adb
-          python3 -m venv venv
-          . venv/bin/activate
+            libffi-dev \
+            libssl-dev \
+            git \
+            zip \
+            zlib1g-dev
+
+      # Step 3: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+
+      # Step 4: Install Buildozer
+      - name: Install Buildozer
+        run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      # Step 4: Build APK
+      # Step 5: Ensure build directory exists
+      - name: Ensure Build Directory
+        run: |
+          if [ ! -f buildozer.spec ]; then
+            echo "buildozer.spec not found!"
+            exit 1
+          fi
+
+      # Step 6: Build APK
       - name: Build APK
         run: |
-          . venv/bin/activate
           buildozer -v android debug
-          mkdir -p build_output
-          mv bin/*.apk build_output/
 
-      # Step 5: Upload APK as Artifact
+      # Step 7: Upload the APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AirMouse-APK
-          path: build_output/*.apk
+          path: bin/*.apk
